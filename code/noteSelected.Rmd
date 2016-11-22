@@ -264,7 +264,7 @@ dev.off()
 ```
 
 ```{r}
-dades <- loadData("../log37/log37.csv","BSC 50 / 20 / Outside interference of 20 MB/s",50,20)
+dades <- loadData("../log36/log36.csv","BSC 50 / 20 / Outside interference of 20 MB/s",50,20)
 draw1(dades)
 drawsmooth(dades)+scale_y_continuous(limits=c(0,150))
 pdf(file="BSC50_20_20i_Timeline.pdf",width = 7, height= 5)
