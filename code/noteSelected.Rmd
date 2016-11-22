@@ -74,7 +74,7 @@ Shows how the mechanism guarantee the 20 MB/s but does not guarantee the 100 MB/
 
 
 ```{r}
-URV10020 <- loadData("/home/msiquier/IOStack/bw-tests/log1/log1.csv","URV 100 / 20", 100, 20)
+URV10020 <- loadData("../log1/log1.csv","URV 100 / 20", 100, 20)
 draw1(URV10020)
 
 drawsmooth(URV10020)+scale_y_continuous(limits=c(0,250))
@@ -205,8 +205,35 @@ draw4(dades)+scale_x_continuous(limits=c(0,250))
 dev.off()
 ```
 
+```{r}
+dades <- loadData("../log38/log38.csv","URV 20 / 10",20,10)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="URV20_10_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="URV20_10_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
 
-
+```{r}
+dades <- loadData("../log40/log40.csv","BSC 20 / 10",20,10)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="BSC20_10_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="BSC20_10_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
 
 
 ```{r}
