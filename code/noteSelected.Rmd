@@ -44,25 +44,25 @@ return (d)
 
 draw1 <- function(dades)
 {
-  ggplot(dades)+geom_line(aes(x=Timestamp,y=BW,colour=Tenant,linetype=Tenant))+theme_bw(base_size = 14)+labs(title=(dades$desc))+theme( legend.position = "top")
+  ggplot(dades)+geom_line(aes(x=Timestamp,y=BW,colour=Tenant,linetype=Tenant))+theme_bw(base_size = 20)+labs(title=(dades$desc))+theme( legend.position = "top")
 }
 drawsmooth <- function(dades)
 {
   ggplot(dades)+geom_smooth(aes(x=Timestamp,y=BW,colour=Tenant,linetype=Tenant), degree=0, 
-        span=0.05, se=FALSE)+theme_bw(base_size = 14)+labs(title=(dades$desc))+theme( legend.position = "top")
+        span=0.05, se=FALSE)+theme_bw(base_size = 20)+labs(title=(dades$desc))+theme( legend.position = "top")
 }
 draw2 <- function(dades)
 {
-  ggplot(dades)+geom_boxplot(aes(x=Tenant,y=BW))+theme_bw()+labs(title=(dades$desc))
+  ggplot(dades)+geom_boxplot(aes(x=Tenant,y=BW))+theme_bw(base_size = 20)+labs(title=(dades$desc))
 }
 draw3 <- function(dades)
 {
-  ggplot(dades)+geom_violin(aes(x=Tenant,y=BW),draw_quantiles = c(0.5))+theme_bw()+labs(title=(dades$desc))
+  ggplot(dades)+geom_violin(aes(x=Tenant,y=BW),draw_quantiles = c(0.5))+theme_bw(base_size = 20)+labs(title=(dades$desc))
 }
 
 draw4 <- function(dades)
 {
-  ggplot(dades,aes(colour=Tenant,x=BW,linetype=Tenant))+ stat_ecdf(geom = "step")+geom_vline(xintercept=dades$label1,colour="black")+geom_vline(xintercept=dades$label2,colour="black")+theme_bw(base_size = 14)+labs(title=(dades$desc))+scale_y_continuous("ecdf")+theme(legend.position = "top")
+  ggplot(dades,aes(colour=Tenant,x=BW,linetype=Tenant))+ stat_ecdf(geom = "step")+geom_vline(xintercept=dades$label1,colour="black")+geom_vline(xintercept=dades$label2,colour="black")+theme_bw(base_size = 20)+labs(title=(dades$desc))+scale_y_continuous("ecdf")+theme(legend.position = "top")
 }
  
 
