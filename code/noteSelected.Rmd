@@ -68,11 +68,6 @@ draw4 <- function(dades)
 
 ```
 
-# Selected LOG1.CSV URV 100 / 20
-Shows how the mechanism guarantee the 20 MB/s but does not guarantee the 100 MB/s
-## Line plot + Violin plot
-
-
 ```{r}
 URV10020 <- loadData("../log1/log1.csv","URV 100 / 20", 100, 20)
 draw1(URV10020)
@@ -89,7 +84,6 @@ draw4(URV10020)+scale_x_continuous(limits=c(0,250))
 dev.off()
 summaryBy(.~Tenant,URV10020,id = ~Timestamp,FUN = c(quantile))
 ```
-# BSC filter allows to request a 100 / 20 BW and the result is fulfilled on the median of the values gathered each second.
 
 ```{r}
 dades <- loadData("../log14/log14.csv","BSC 100 / 20",100,20)
@@ -105,10 +99,6 @@ pdf(file="BSC100_20_ECDF.pdf",width = 7, height= 5)
 draw4(dades)+scale_x_continuous(limits=c(0,250))
 dev.off()
 ```
-
-
-# Selected LOG33 URV 50 / 20 
-Shows that asking less BW (100 -> 50) allows to obtain the requested value for a tenant but does not allow to obtain it for the other one (asked 20 and obtained 10)
 
 ```{r}
 dades <- loadData("../log33/log33.csv","URV 50 / 20",50,20)
@@ -140,9 +130,6 @@ draw4(dades)+scale_x_continuous(limits=c(0,120))
 dev.off()
 ```
 
-
-
-# Experiment to show how exceeding the capabilities of the system works URV 100 / 100. Requests should go to different object stores so the results should be higher. But the median falls below the 40 MB/s
 ```{r}
 dades <- loadData("../log6/log6.csv","URV 100 / 100",100,100)
 draw1(dades)
@@ -171,7 +158,6 @@ pdf(file="BSC100_100_ECDF.pdf",width = 7, height= 5)
 draw4(dades)+scale_x_continuous(limits=c(0,120))
 dev.off()
 ```
-# Experiment to show how exceeding the capabilities of the system works URV 50 / 50 Requests should go to different object stores so the results should be higher. But the median falls below the 40 MB/s. The results are worse than the 100/100 scenario.
 
 ```{r}
 dades <- loadData("../log8/log8.csv","URV 50 / 50",50,50)
@@ -188,8 +174,6 @@ draw4(dades)+scale_x_continuous(limits=c(0,250))
 dev.off()
 ```
 
-
-# A less demanding bw differentation, for example 50 / 50 shows how we exceed the asked capabilities. 
 ```{r}
 dades <- loadData("../log11/log11.csv","BSC 50 / 50",50,50)
 draw1(dades)
