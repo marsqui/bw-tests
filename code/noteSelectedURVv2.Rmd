@@ -1,0 +1,351 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(doBy)
+loadData <- function(FILE,desc,label1,label2)
+{
+d <- read.csv(FILE,header = FALSE)
+if(label2 > label1)
+{
+  tmp <- label2
+  label2 <- label1
+  label1 <- tmp
+  tmp <- d[1]
+  d[1] <- d[2]
+  d[2] <- tmp
+}
+d$TimeStamp <- 1:nrow(d)
+names(d) <- c(paste("Tenant 1 @",label1,"MB/s"), paste("Tenant 2 @",label2,"MB/s"),"Timestamp")
+d <- melt(d,id.vars=c("Timestamp"))
+names(d) <- c("Timestamp","Tenant","BW")
+d$desc <- desc
+d$label1 <- label1
+d$label2 <- label2
+return (d)
+}
+
+loadData1 <- function(FILE,desc,label1)
+{
+d <- read.csv(FILE,header = FALSE)
+d$TimeStamp <- 1:nrow(d)
+names(d) <- c("Tenant 1", "Timestamp")
+d <- melt(d,id.vars=c("Timestamp"))
+names(d) <- c("Timestamp","Tenant","BW")
+d$desc <- desc
+return (d)
+}
+
+draw1 <- function(dades)
+{
+  ggplot(dades)+geom_line(aes(x=Timestamp,y=BW,colour=Tenant,linetype=Tenant))+theme_bw(base_size = 14)+labs(title=(dades$desc))+theme( legend.position = "top")
+}
+drawsmooth <- function(dades)
+{
+  ggplot(dades)+geom_smooth(aes(x=Timestamp,y=BW,colour=Tenant,linetype=Tenant), degree=0, 
+        span=0.05, se=FALSE)+theme_bw(base_size = 14)+labs(title=(dades$desc))+theme( legend.position = "top")
+}
+draw2 <- function(dades)
+{
+  ggplot(dades)+geom_boxplot(aes(x=Tenant,y=BW))+theme_bw()+labs(title=(dades$desc))
+}
+draw3 <- function(dades)
+{
+  ggplot(dades)+geom_violin(aes(x=Tenant,y=BW),draw_quantiles = c(0.5))+theme_bw()+labs(title=(dades$desc))
+}
+
+draw4 <- function(dades)
+{
+  ggplot(dades,aes(colour=Tenant,x=BW,linetype=Tenant))+ stat_ecdf(geom = "step")+geom_vline(xintercept=dades$label1,colour="black")+geom_vline(xintercept=dades$label2,colour="black")+theme_bw(base_size = 14)+labs(title=(dades$desc))+scale_y_continuous("ecdf")+theme(legend.position = "top")
+}
+ 
+
+```
+
+# Selected LOG41.CSV URV 100 / 20
+Shows how the mechanism guarantee the 20 MB/s but does not guarantee the 100 MB/s
+## Line plot + Violin plot
+
+
+```{r}
+URV10020 <- loadData("../log41/log41.csv","URV 100 / 20", 20, 100)
+draw1(URV10020)
+
+drawsmooth(URV10020)+scale_y_continuous(limits=c(0,250))
+pdf(file="URV2-100_20_Timeline.pdf",width = 7, height= 5)
+drawsmooth(URV10020)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(URV10020)
+draw3(URV10020)
+draw4(URV10020)+scale_x_continuous(limits=c(0,250))
+pdf(file="URV2-100_20_ECDF.pdf",width = 7, height= 5)
+draw4(URV10020)+scale_x_continuous(limits=c(0,250))
+dev.off()
+summaryBy(.~Tenant,URV10020,id = ~Timestamp,FUN = c(quantile))
+```
+# BSC filter allows to request a 100 / 20 BW and the result is fulfilled on the median of the values gathered each second.
+
+```{r}
+dades <- loadData("../log14/log14.csv","BSC 100 / 20",100,20)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="BSC100_20_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)
+pdf(file="BSC100_20_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
+
+
+# Selected LOG44 URV 50 / 20 
+Shows that asking less BW (100 -> 50) allows to obtain the requested value for a tenant but does not allow to obtain it for the other one (asked 20 and obtained 10)
+
+```{r}
+dades <- loadData("../log44/log44.csv","URV 50 / 20",20,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+pdf(file="URV2-50_20_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+pdf(file="URV2-50_20_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+dev.off()
+summaryBy(.~Tenant,URV10020,id = ~Timestamp,FUN = c(quantile))
+```
+```{r}
+dades <- loadData("../log27/log27.csv","BSC 50 / 20",20,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+pdf(file="BSC50_20_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+pdf(file="BSC50_20_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+dev.off()
+```
+
+
+
+# Experiment to show how exceeding the capabilities of the system works URV 100 / 100. Requests should go to different object stores so the results should be higher. But the median falls below the 40 MB/s
+```{r}
+dades <- loadData("../log43/log43.csv","URV 100 / 100",100,100)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+pdf(file="URV2-100_100_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+pdf(file="URV2-100_100_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+dev.off()
+```
+```{r}
+dades <- loadData("../log35/log35.csv","BSC 100 / 100",100,100)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+pdf(file="BSC100_100_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,100))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+pdf(file="BSC100_100_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,120))
+dev.off()
+```
+# Experiment to show how exceeding the capabilities of the system works URV 50 / 50 Requests should go to different object stores so the results should be higher. But the median falls below the 40 MB/s. The results are worse than the 100/100 scenario.
+
+```{r}
+dades <- loadData("../log42/log42.csv","URV 50 / 50",50,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="URV2-50_50_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="URV2-50_50_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
+
+
+# A less demanding bw differentation, for example 50 / 50 shows how we exceed the asked capabilities. 
+```{r}
+dades <- loadData("../log11/log11.csv","BSC 50 / 50",50,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="BSC50_50_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="BSC50_50_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
+
+```{r}
+dades <- loadData("../log45/log45.csv","URV 20 / 10",10,20)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="URV2-20_10_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="URV2-20_10_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
+
+```{r}
+dades <- loadData("../log40/log40.csv","BSC 20 / 10",20,10)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+pdf(file="BSC20_10_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,250))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+pdf(file="BSC20_10_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,250))
+dev.off()
+```
+
+
+```{r}
+dades <- loadData("../log46/log46.csv","URV 50 / 20 / Outside interference of 10 MB/s ",20,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,200))
+pdf(file="URV2-50_20_10i_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,200))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,200))
+pdf(file="URV2-50_20_10i_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,200))
+dev.off()
+```
+```{r}
+dades <- loadData("../log26/log26.csv","BSC 50 / 20 / Outside interference of 10 MB/s",20,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,200))
+pdf(file="BSC50_20_10i_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,200))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,200))
+pdf(file="BSC50_20_10i_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,200))
+dev.off()
+```
+
+
+```{r}
+dades <- loadData("../log20/log20.csv","URV 50 / 50 / Outside interference of 10 MB/s ",50,50)
+draw1(dades)
+drawsmooth(dades)
+draw2(dades)
+draw3(dades)
+draw4(dades)
+```
+
+```{r}
+dades <- loadData("../log47/log47.csv","URV 50 / 20 / Outside interference of 20 MB/s ",20,50)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,150))
+pdf(file="URV2-50_20_20i_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,150))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,150))
+pdf(file="URV2-50_20_20i_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,150))
+dev.off()
+```
+
+```{r}
+dades <- loadData("../log36/log36.csv","BSC 50 / 20 / Outside interference of 20 MB/s",50,20)
+draw1(dades)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,150))
+pdf(file="BSC50_20_20i_Timeline.pdf",width = 7, height= 5)
+drawsmooth(dades)+scale_y_continuous(limits=c(0,150))
+dev.off()
+draw2(dades)
+draw3(dades)
+draw4(dades)+scale_x_continuous(limits=c(0,150))
+pdf(file="BSC50_20_20i_ECDF.pdf",width = 7, height= 5)
+draw4(dades)+scale_x_continuous(limits=c(0,150))
+dev.off()
+```
+
+
+```{r}
+dades <- loadData("../log32/log32.csv","BSC 100 / 20 / Outside interference of 20 MB/s",20,100)
+draw1(dades)
+drawsmooth(dades)
+draw2(dades)
+draw3(dades)
+draw4(dades)
+```
+
+
+
+```{r}
+dades <- loadData("../log29/log29.csv","BSC 100 / 20 / Outside interference of 10 MB/s",20,100)
+draw1(dades)
+drawsmooth(dades)
+draw2(dades)
+draw3(dades)
+draw4(dades)
+```
+
+```{r}
+dades <- loadData("../log30/log30.csv","BSC 100 / 20 / Outside interference of 10 MB/s",20,100)
+draw1(dades)
+drawsmooth(dades)
+draw2(dades)
+draw3(dades)
+draw4(dades)
+```
+
+
+```{r}
+dades <- loadData("../log31/log31.csv","BSC 100 / 20 / Outside interference of 10 MB/s",20,100)
+draw1(dades)
+drawsmooth(dades)
+draw2(dades)
+draw3(dades)
+draw4(dades)
+```
+
+
+
+
+
